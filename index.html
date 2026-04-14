@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zhenya Stickers</title>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: #fff;
+            color: #222;
+            min-height: 100vh;
+            padding: 12px;
+        }
+        .header {
+            text-align: center;
+            padding: 16px 0 12px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 8px 0;
+        }
+        .sticker-card {
+            position: relative;
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 8px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sticker-card:active {
+            transform: scale(0.92);
+        }
+        .sticker-card:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .sticker-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .sticker-card .label {
+            position: absolute;
+            bottom: 6px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            font-weight: 600;
+        }
+        .preview-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .preview-overlay.active {
+            display: flex;
+        }
+        .preview-overlay img {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+        }
+        .preview-overlay .name {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .preview-actions button {
+            background: #4986cc;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .preview-actions button.close-btn {
+            background: rgba(255,255,255,0.2);
+        }
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding: 8px 0 4px;
+            flex-wrap: wrap;
+        }
+        .tab-bar button {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+        }
+        .tab-bar button.active {
+            background: #4986cc;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Zhenya Stickers</h1>
+        <p>Tap a sticker to share</p>
+    </div>
+
+    <div class="tab-bar">
+        <button class="active" onclick="filterStickers('all')">All</button>
+        <button onclick="filterStickers('zhenya')">Zhenya</button>
+        <button onclick="filterStickers('bigcat')">Big Cat</button>
+        <button onclick="filterStickers('littlecat')">Little Cat</button>
+        <button onclick="filterStickers('both')">Together</button>
+    </div>
+
+    <div class="grid" id="sticker-grid"></div>
+
+    <div class="preview-overlay" id="preview">
+        <img id="preview-img" src="">
+        <div class="name" id="preview-name"></div>
+        <div class="preview-actions">
+            <button onclick="shareSticker()">Share</button>
+            <button onclick="downloadSticker()">Save</button>
+            <button class="close-btn" onclick="closePreview()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize VK Bridge
+        if (window.vkBridge) {
+            vkBridge.send('VKWebAppInit');
+        }
+
+        const STICKER_BASE = 'stickers/';
+
+        const stickers = [
+            { name: 'Wave', file: 'ZhenyaWave.webp', static: 'ZhenyaWave.png', category: 'zhenya' },
+            { name: 'Heart', file: 'ZhenyaHeart.webp', static: 'ZhenyaHeart.png', category: 'zhenya' },
+            { name: 'Hug', file: 'ZhenyaHug.webp', static: 'ZhenyaHug.png', category: 'zhenya' },
+            { name: 'Cheer', file: 'ZhenyaCheer.webp', static: 'ZhenyaCheer.png', category: 'zhenya' },
+            { name: 'Dancing', file: 'zhenyadancing.webp', static: 'zhenyadancing.png', category: 'zhenya' },
+            { name: 'Love You', file: 'ZhenyaLoveYou.webp', static: 'ZhenyaLoveYou.png', category: 'zhenya' },
+            { name: 'Yes!', file: 'Zhenyayes.webp', static: 'Zhenyayes.png', category: 'zhenya' },
+            { name: 'Surprised', file: 'zhenyasurprised.webp', static: 'zhenyasurprised.png', category: 'zhenya' },
+            { name: 'Cry', file: 'ZhenyaCry.webp', static: 'ZhenyaCry.png', category: 'zhenya' },
+            { name: 'Fists', file: 'Zhenyafists.webp', static: 'Zhenyafists.png', category: 'zhenya' },
+            { name: 'Scream', file: 'ZhenyaScream.webp', static: 'ZhenyaScream.png', category: 'zhenya' },
+            { name: 'Scream 2', file: 'ZhenyaScream2.webp', static: 'ZhenyaScream2.png', category: 'zhenya' },
+            { name: 'Sleeps', file: 'ZhenyaSleeps.webp', static: 'ZhenyaSleeps.png', category: 'zhenya' },
+            { name: 'Tired', file: 'ZhenyaTired.webp', static: 'ZhenyaTired.png', category: 'zhenya' },
+            { name: 'Bouncing', file: 'bigcatbouncing.webp', static: null, category: 'bigcat' },
+            { name: 'Dancing', file: 'bigcatdancing.webp', static: null, category: 'bigcat' },
+            { name: 'Dreams', file: 'bigcatdreams.webp', static: null, category: 'bigcat' },
+            { name: 'Love', file: 'BigcatLove.webp', static: null, category: 'bigcat' },
+            { name: 'Missing', file: 'bigcatmissing.webp', static: null, category: 'bigcat' },
+            { name: 'Present', file: 'bigcatpresent.webp', static: null, category: 'bigcat' },
+            { name: 'Working', file: 'bigcatworking.webp', static: null, category: 'bigcat' },
+            { name: 'Yawn', file: 'bigcatyawn.webp', static: null, category: 'bigcat' },
+            { name: 'Cleaning', file: 'bigcatcleaning.webp', static: null, category: 'bigcat' },
+            { name: 'Protecting', file: 'bigcatprotecting.webp', static: null, category: 'bigcat' },
+            { name: 'Dancing', file: 'littlecatdancing.webp', static: null, category: 'littlecat' },
+            { name: 'Yay!', file: 'littlecatdancingyay.webp', static: null, category: 'littlecat' },
+            { name: 'Love', file: 'littlecatlove.webp', static: null, category: 'littlecat' },
+            { name: 'Shy', file: 'littlecatshy.webp', static: null, category: 'littlecat' },
+            { name: 'Smile', file: 'littlecatsmile.webp', static: null, category: 'littlecat' },
+            { name: 'Sleeping', file: 'littlecatsleeping.webp', static: null, category: 'littlecat' },
+            { name: 'Crying', file: 'littlecatcrying.webp', static: null, category: 'littlecat' },
+            { name: 'Jumping', file: 'littlecatjumping.webp', static: null, category: 'littlecat' },
+            { name: 'Cleaning', file: 'littlecatcleaning.webp', static: null, category: 'littlecat' },
+            { name: 'Tail', file: 'littlecattail.webp', static: null, category: 'littlecat' },
+            { name: 'Playing', file: 'bothcatsplaying.webp', static: null, category: 'both' },
+            { name: 'Sleeping', file: 'bothcatssleeping.webp', static: null, category: 'both' },
+        ];
+
+        let currentFilter = 'all';
+        let selectedSticker = null;
+
+        function filterStickers(category) {
+            currentFilter = category;
+            document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('sticker-grid');
+            const filtered = currentFilter === 'all' ? stickers : stickers.filter(s => s.category === currentFilter);
+            grid.innerHTML = filtered.map((s, i) => `
+                <div class="sticker-card" onclick="openPreview(${stickers.indexOf(s)})">
+                    <img src="${STICKER_BASE}${s.file}" alt="${s.name}" loading="lazy">
+                    <div class="label">${s.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function openPreview(index) {
+            selectedSticker = stickers[index];
+            document.getElementById('preview-img').src = STICKER_BASE + selectedSticker.file;
+            document.getElementById('preview-name').textContent = selectedSticker.name;
+            document.getElementById('preview').classList.add('active');
+        }
+
+        function closePreview() {
+            document.getElementById('preview').classList.remove('active');
+            selectedSticker = null;
+        }
+
+        function shareSticker() {
+            if (!selectedSticker) return;
+            if (window.vkBridge) {
+                // Try to share via VK Bridge
+                vkBridge.send('VKWebAppShare', {
+                    link: window.location.href
+                }).catch(() => {});
+            }
+            // Fallback: try native share
+            if (navigator.share) {
+                const url = STICKER_BASE + (selectedSticker.static || selectedSticker.file);
+                fetch(url).then(r => r.blob()).then(blob => {
+                    const file = new File([blob], selectedSticker.file, { type: blob.type });
+                    navigator.share({ files: [file], title: 'Zhenya Sticker: ' + selectedSticker.name });
+                }).catch(() => {});
+            }
+        }
+
+        function downloadSticker() {
+            if (!selectedSticker) return;
+            const url = STICKER_BASE + (selectedSticker.static || selectedSticker.file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = selectedSticker.name + '.webp';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Close preview on overlay click
+        document.getElementById('preview').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('preview')) closePreview();
+        });
+
+        renderGrid();
+    </script>
+</body>
+</html>
