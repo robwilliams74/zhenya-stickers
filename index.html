@@ -247,19 +247,24 @@
 
         function shareSticker() {
             if (!selectedSticker) return;
-            if (window.vkBridge) {
-                // Try to share via VK Bridge
-                vkBridge.send('VKWebAppShare', {
-                    link: window.location.href
-                }).catch(() => {});
-            }
-            // Fallback: try native share
+            // Get the GIF version for sharing (animated in chat)
+            const gifName = selectedSticker.file.replace('.webp', '.gif');
+            const gifUrl = STICKER_BASE + gifName;
+            const webpUrl = STICKER_BASE + selectedSticker.file;
+
+            // Try native share with GIF file (works in VK and other apps)
             if (navigator.share) {
-                const url = STICKER_BASE + (selectedSticker.static || selectedSticker.file);
-                fetch(url).then(r => r.blob()).then(blob => {
-                    const file = new File([blob], selectedSticker.file, { type: blob.type });
-                    navigator.share({ files: [file], title: 'Zhenya Sticker: ' + selectedSticker.name });
+                fetch(gifUrl).then(r => r.blob()).then(blob => {
+                    const file = new File([blob], gifName, { type: 'image/gif' });
+                    navigator.share({ files: [file], title: selectedSticker.name }).catch(() => {
+                        // Fallback to VK Bridge
+                        if (window.vkBridge) {
+                            vkBridge.send('VKWebAppShare', { link: window.location.href }).catch(() => {});
+                        }
+                    });
                 }).catch(() => {});
+            } else if (window.vkBridge) {
+                vkBridge.send('VKWebAppShare', { link: window.location.href }).catch(() => {});
             }
         }
 
