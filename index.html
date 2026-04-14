@@ -16,7 +16,7 @@
             background: #fff;
             color: #222;
             min-height: 100vh;
-            padding: 12px;
+            padding: 3vw;
             overflow-x: hidden;
             width: 100%;
             position: relative;
@@ -37,8 +37,8 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            padding: 8px 0;
+            gap: 2vw;
+            padding: 2vw 0;
             max-width: 100%;
             overflow: hidden;
         }
@@ -46,13 +46,14 @@
             position: relative;
             background: #f5f5f5;
             border-radius: 16px;
-            padding: 8px;
+            padding: 4%;
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
             aspect-ratio: 1;
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
         }
         .sticker-card:active {
             transform: scale(0.92);
@@ -64,14 +65,15 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            max-width: 100%;
         }
         .sticker-card .label {
             position: absolute;
-            bottom: 6px;
+            bottom: 4%;
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 10px;
+            font-size: clamp(8px, 2.5vw, 12px);
             color: #666;
             font-weight: 600;
         }
