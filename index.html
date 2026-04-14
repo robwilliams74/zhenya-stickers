@@ -7,12 +7,19 @@
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
             background: #fff;
             color: #222;
             min-height: 100vh;
             padding: 12px;
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
         }
         .header {
             text-align: center;
@@ -32,6 +39,8 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             padding: 8px 0;
+            max-width: 100%;
+            overflow: hidden;
         }
         .sticker-card {
             position: relative;
@@ -170,7 +179,7 @@
             { name: 'Hug', file: 'ZhenyaHug.webp', static: 'ZhenyaHug.png', category: 'zhenya' },
             { name: 'Cheer', file: 'ZhenyaCheer.webp', static: 'ZhenyaCheer.png', category: 'zhenya' },
             { name: 'Dancing', file: 'zhenyadancing.webp', static: 'zhenyadancing.png', category: 'zhenya' },
-            { name: 'Love You', file: 'ZhenyaLoveYou.webp', static: 'ZhenyaLoveYou.png', category: 'zhenya' },
+
             { name: 'Yes!', file: 'Zhenyayes.webp', static: 'Zhenyayes.png', category: 'zhenya' },
             { name: 'Surprised', file: 'zhenyasurprised.webp', static: 'zhenyasurprised.png', category: 'zhenya' },
             { name: 'Cry', file: 'ZhenyaCry.webp', static: 'ZhenyaCry.png', category: 'zhenya' },
@@ -182,7 +191,6 @@
             { name: 'Bouncing', file: 'bigcatbouncing.webp', static: null, category: 'bigcat' },
             { name: 'Dancing', file: 'bigcatdancing.webp', static: null, category: 'bigcat' },
             { name: 'Dreams', file: 'bigcatdreams.webp', static: null, category: 'bigcat' },
-            { name: 'Love', file: 'BigcatLove.webp', static: null, category: 'bigcat' },
             { name: 'Missing', file: 'bigcatmissing.webp', static: null, category: 'bigcat' },
             { name: 'Present', file: 'bigcatpresent.webp', static: null, category: 'bigcat' },
             { name: 'Working', file: 'bigcatworking.webp', static: null, category: 'bigcat' },
@@ -191,7 +199,6 @@
             { name: 'Protecting', file: 'bigcatprotecting.webp', static: null, category: 'bigcat' },
             { name: 'Dancing', file: 'littlecatdancing.webp', static: null, category: 'littlecat' },
             { name: 'Yay!', file: 'littlecatdancingyay.webp', static: null, category: 'littlecat' },
-            { name: 'Love', file: 'littlecatlove.webp', static: null, category: 'littlecat' },
             { name: 'Shy', file: 'littlecatshy.webp', static: null, category: 'littlecat' },
             { name: 'Smile', file: 'littlecatsmile.webp', static: null, category: 'littlecat' },
             { name: 'Sleeping', file: 'littlecatsleeping.webp', static: null, category: 'littlecat' },
