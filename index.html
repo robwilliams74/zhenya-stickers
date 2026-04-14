@@ -144,7 +144,7 @@
 <body>
     <div class="header">
         <h1>Zhenya Stickers</h1>
-        <p>Tap a sticker to share</p>
+        <p>Tap to preview. Share GIF for VK chat.</p>
     </div>
 
     <div class="tab-bar">
@@ -161,8 +161,8 @@
         <img id="preview-img" src="">
         <div class="name" id="preview-name"></div>
         <div class="preview-actions">
-            <button onclick="shareSticker()">Share</button>
-            <button onclick="downloadSticker()">Save</button>
+            <button onclick="shareSticker()">Share GIF</button>
+            <button onclick="downloadSticker()">Save GIF</button>
             <button class="close-btn" onclick="closePreview()">Close</button>
         </div>
     </div>
@@ -247,36 +247,41 @@
 
         function shareSticker() {
             if (!selectedSticker) return;
-            // Get the GIF version for sharing (animated in chat)
             const gifName = selectedSticker.file.replace('.webp', '.gif');
             const gifUrl = STICKER_BASE + gifName;
-            const webpUrl = STICKER_BASE + selectedSticker.file;
 
-            // Try native share with GIF file (works in VK and other apps)
+            // Try native share with GIF file
             if (navigator.share) {
                 fetch(gifUrl).then(r => r.blob()).then(blob => {
                     const file = new File([blob], gifName, { type: 'image/gif' });
                     navigator.share({ files: [file], title: selectedSticker.name }).catch(() => {
-                        // Fallback to VK Bridge
-                        if (window.vkBridge) {
-                            vkBridge.send('VKWebAppShare', { link: window.location.href }).catch(() => {});
-                        }
+                        // Fallback to download
+                        downloadGif();
                     });
-                }).catch(() => {});
-            } else if (window.vkBridge) {
-                vkBridge.send('VKWebAppShare', { link: window.location.href }).catch(() => {});
+                }).catch(() => downloadGif());
+            } else {
+                downloadGif();
             }
         }
 
-        function downloadSticker() {
+        function downloadGif() {
             if (!selectedSticker) return;
-            const url = STICKER_BASE + (selectedSticker.static || selectedSticker.file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = selectedSticker.name + '.webp';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const gifName = selectedSticker.file.replace('.webp', '.gif');
+            const gifUrl = STICKER_BASE + gifName;
+            fetch(gifUrl).then(r => r.blob()).then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = selectedSticker.name + '.gif';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function downloadSticker() {
+            downloadGif();
         }
 
         // Close preview on overlay click
